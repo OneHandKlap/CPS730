@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <regex.h>
-#include<time.h>
+#include <time.h>
 
 char* chop(char *string)
 {
@@ -98,14 +98,33 @@ int main(int argc, char ** argv){
         regex_t reg;
         regmatch_t postmatch[2];
 
-        int postMatch = regcomp(&reg,"^POST",0);
+        int postMatch = regcomp(&reg,"[(^GET)|(^POST)|(HEAD)]",0);
         
         if (regexec(&reg, client_message,postMatch, postmatch,0)==0){
-            puts("You posted");
+
+            char *token=strtok((client_message),"/");
+            token = strtok(NULL,"/");
+            printf("%ld",strlen(token));
+
+            FILE *fp;
+            if((fp=fopen(token,"r"))==NULL){
+                fprintf(stderr,"File corrupted");
+                exit(1);
+            }
+            char buff[255];
+            fflush(stdin);
+            fgets(buff,255,fp);
+            // puts(buff);
+            
+            // while(fgets(buff, 255, fp)!= NULL){
+            //     puts(buff);
+            // }
+        }
+        else{
 
         }
-        write(client_sock , client_message , strlen(client_message));
-        puts(client_message);
+        // write(client_sock , client_message , strlen(client_message));
+        // puts(client_message);
         
     }
     if(read_size==0){
