@@ -8,39 +8,39 @@
 #include <time.h>
 
 
-void generateReply(int argCommand){
+// void generateReply(int argCommand){
 
-    if(argCommand==1){
-        //STUFF FOR POST
-        //retrieve POST function status code
-        //retrieve HEADERS
-        //FORMAT
-        //PRINt/PUT/WRITE
-    }
-    if(argCommand==2){
-        //STUFF FOR GET
-        //retrieve GET function status code
-        //retrieve HEADERS
-        //retrieve file lines
-        //FORMAT
-        //PRINt/PUT/WRITE (from file)
+//     if(argCommand==1){
+//         //STUFF FOR POST
+//         //retrieve POST function status code
+//         //retrieve HEADERS
+//         //FORMAT
+//         //PRINt/PUT/WRITE
+//     }
+//     if(argCommand==2){
+//         //STUFF FOR GET
+//         //retrieve GET function status code
+//         //retrieve HEADERS
+//         //retrieve file lines
+//         //FORMAT
+//         //PRINt/PUT/WRITE (from file)
         
-    }
-    if(argCommand==3){
-        //STUFF FOR HEAD
-        //retrieve GET function status code
-        //retrieve HEADERS
-        //retrieve file lines
-        //FORMAT
-    }
-    else{
-        return 1;
-    }
-}
+//     }
+//     if(argCommand==3){
+//         //STUFF FOR HEAD
+//         //retrieve GET function status code
+//         //retrieve HEADERS
+//         //retrieve file lines
+//         //FORMAT
+//     }
+//     else{
+//         return 1;
+//     }
+// }
 
-int post(char file){
+// int post(char file){
 
-}
+// }
 
 
 
@@ -51,7 +51,7 @@ int main(int argc, char ** argv){
     struct sockaddr_in server, client;
     char client_message[2000];
     char* reply_message;
-    int port;
+    int port=0;
 
     if (argc>1){
         if (strcmp(argv[1],"-p")==0){
@@ -72,8 +72,12 @@ int main(int argc, char ** argv){
     server.sin_family = AF_INET;
     server.sin_addr.s_addr=INADDR_ANY;
     // inet_pton(AF_INET, "192.0.2.33", &(server.sin_addr.s_addr));
+    if(port>=8000){
+        server.sin_port=htons(port);
+    }
+    else{
     server.sin_port = htons(8888);
-
+    }
     //bind socket
 
     if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0){
@@ -127,19 +131,19 @@ int main(int argc, char ** argv){
             token = strtok(NULL,"/");
             puts(token);
 
-            FILE *fp;
-            if((fp=fopen(token,"r"))==NULL){
-                puts("Status Code: 404 / File Not Found");
-            }
-            char buff[255];
+            // FILE *fp;
+            // if((fp=fopen(token,"r"))==NULL){
+            //     puts("Status Code: 404 / File Not Found");
+            // }
+            // char buff[255];
             
-            while(fgets(buff, 255, fp)!= NULL){
-                puts(buff);
-            }
+            // while(fgets(buff, 255, fp)!= NULL){
+            //     puts(buff);
+            // }
         }
-        else{
+        // else{
 
-        }
+        // }
         // write(client_sock , client_message , strlen(client_message));
         // puts(client_message);
         
