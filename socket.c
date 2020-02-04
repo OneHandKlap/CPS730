@@ -7,23 +7,44 @@
 #include <regex.h>
 #include <time.h>
 
-char* chop(char *string)
-{
-    int i, len;
-    len = strlen(string);
-    char *newstring;
- 
-    newstring = (char *) malloc(len-1);
- 
-    printf("len og newstring %ld\n", strlen(string));
-    for(i = 0; i < strlen(string)-1; i++)
-    {
-        newstring[i] = string[i]; 
-        printf("in the string %c\n", string[i]);
+
+void generateReply(int argCommand){
+
+    if(argCommand==1){
+        //STUFF FOR POST
+        //retrieve POST function status code
+        //retrieve HEADERS
+        //FORMAT
+        //PRINt/PUT/WRITE
     }
- 
-    return newstring;
+    if(argCommand==2){
+        //STUFF FOR GET
+        //retrieve GET function status code
+        //retrieve HEADERS
+        //retrieve file lines
+        //FORMAT
+        //PRINt/PUT/WRITE (from file)
+        
+    }
+    if(argCommand==3){
+        //STUFF FOR HEAD
+        //retrieve GET function status code
+        //retrieve HEADERS
+        //retrieve file lines
+        //FORMAT
+    }
+    else{
+        return 1;
+    }
 }
+
+int post(char file){
+
+}
+
+
+
+
 int main(int argc, char ** argv){
     clock_t begin = clock();
     int socket_desc, client_sock, c ,read_size;
@@ -104,21 +125,17 @@ int main(int argc, char ** argv){
 
             char *token=strtok((client_message),"/");
             token = strtok(NULL,"/");
-            printf("%ld",strlen(token));
+            puts(token);
 
             FILE *fp;
             if((fp=fopen(token,"r"))==NULL){
-                fprintf(stderr,"File corrupted");
-                exit(1);
+                puts("Status Code: 404 / File Not Found");
             }
             char buff[255];
-            fflush(stdin);
-            fgets(buff,255,fp);
-            // puts(buff);
             
-            // while(fgets(buff, 255, fp)!= NULL){
-            //     puts(buff);
-            // }
+            while(fgets(buff, 255, fp)!= NULL){
+                puts(buff);
+            }
         }
         else{
 
