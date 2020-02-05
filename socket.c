@@ -12,11 +12,9 @@ int post(char file[], char info[]){
 
     FILE *fp=fopen(file,"w");
     if(fp!=NULL){
-        char str[80];
-        strcpy(str,"<hi>");
+        char str[strlen(info)];
         strcpy(str,info);
-        strcpy(str,"</hi>");
-        fwrite(str,1,sizeof(str),fp);
+        fwrite(str,1,strlen(str),fp);
         fclose(fp);
 
     }
@@ -26,7 +24,7 @@ int post(char file[], char info[]){
     return 0;
 
 }
-void generateReply(int argCommand, char file[], char info[]){
+void generateReply(int argCommand, char file[], char info[],int client_sock){
 
     if(argCommand==1){
         //STUFF FOR POST
@@ -34,8 +32,9 @@ void generateReply(int argCommand, char file[], char info[]){
         //retrieve HEADERS
         //FORMAT
         //PRINt/PUT/WRITE
+        printf("writing: %s; to file %s",info,file);
         if(post(file,info)==0){
-            printf("status OK");
+            send(client_sock,"Status Code: 200",17,0);
         }
         else{
             printf("Error");
@@ -145,17 +144,18 @@ int main(int argc, char ** argv){
 
         if(strcmp(token,"POST")==0){
             puts(token);
-            
-            strtok(NULL,"/");
+            token=strtok(NULL,"/");
+
             puts(token);
-            char fileName[sizeof(token)];
+            char fileName[strlen(token)];
             
             strcpy(fileName,token);
-            strtok(NULL,"/");
+            token=strtok(NULL,"/");
+
             puts(token);
-            char info[sizeof(token)];
+            char info[strlen(token)];
             strcpy(info,token);
-            generateReply(1,fileName,info);
+            generateReply(1,fileName,info,client_sock);
             
         }
         if(strcmp(token,"GET")==0){
