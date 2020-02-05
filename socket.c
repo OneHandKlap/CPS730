@@ -50,21 +50,13 @@ void generateReply(int argCommand, char file[], char info[],int client_sock){
     //     //PRINt/PUT/WRITE (from file)
         
     // }
-    // if(argCommand==3){
-    //     //STUFF FOR HEAD
-    //     //retrieve GET function status code
-    //     //retrieve HEADERS
-    //     //retrieve file lines
-    //     //FORMAT
-    // }
+     if(argCommand==3){
+	send(client_sock,"Status Code: 200\n", 17,0);
+     }
     else{
         printf("error invalid command selection generateReply");
     }
 }
-
-
-
-
 
 int main(int argc, char ** argv){
     clock_t begin = clock();
@@ -159,12 +151,16 @@ int main(int argc, char ** argv){
             
         }
         if(strcmp(token,"GET")==0){
-            char *file=strtok(NULL," ");
             
         }
         if(strcmp(token,"HEAD")==0){
-            char *file=strtok(NULL," ");
-            
+            puts(token);
+	    token=strtok(NULL, "/");
+
+            puts(token);
+            char fileName[strlen(token)];
+
+	    generateReply(3,fileName, "", client_sock);
         }
         
     }
