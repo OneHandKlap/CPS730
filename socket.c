@@ -8,39 +8,61 @@
 #include <time.h>
 
 
-// void generateReply(int argCommand){
+int post(char file[], char info[]){
 
-//     if(argCommand==1){
-//         //STUFF FOR POST
-//         //retrieve POST function status code
-//         //retrieve HEADERS
-//         //FORMAT
-//         //PRINt/PUT/WRITE
-//     }
-//     if(argCommand==2){
-//         //STUFF FOR GET
-//         //retrieve GET function status code
-//         //retrieve HEADERS
-//         //retrieve file lines
-//         //FORMAT
-//         //PRINt/PUT/WRITE (from file)
+    FILE *fp=fopen(file,"w");
+    if(fp!=NULL){
+        char str[80];
+        strcpy(str,"<hi>");
+        strcpy(str,info);
+        strcpy(str,"</hi>");
+        fwrite(str,1,sizeof(str),fp);
+        fclose(fp);
+
+    }
+    else{
+        return 1;
+    }
+    return 0;
+
+}
+void generateReply(int argCommand, char file[], char info[]){
+
+    if(argCommand==1){
+        //STUFF FOR POST
+        //retrieve POST function status code
+        //retrieve HEADERS
+        //FORMAT
+        //PRINt/PUT/WRITE
+        if(post(file,info)==0){
+            printf("status OK");
+        }
+        else{
+            printf("Error");
+        }
+
+    }
+    // if(argCommand==2){
+    //     //STUFF FOR GET
+    //     //retrieve GET function status code
+    //     //retrieve HEADERS
+    //     //retrieve file lines
+    //     //FORMAT
+    //     //PRINt/PUT/WRITE (from file)
         
-//     }
-//     if(argCommand==3){
-//         //STUFF FOR HEAD
-//         //retrieve GET function status code
-//         //retrieve HEADERS
-//         //retrieve file lines
-//         //FORMAT
-//     }
-//     else{
-//         return 1;
-//     }
-// }
+    // }
+    // if(argCommand==3){
+    //     //STUFF FOR HEAD
+    //     //retrieve GET function status code
+    //     //retrieve HEADERS
+    //     //retrieve file lines
+    //     //FORMAT
+    // }
+    else{
+        printf("error invalid command selection generateReply");
+    }
+}
 
-// int post(char file){
-
-// }
 
 
 
@@ -99,14 +121,7 @@ int main(int argc, char ** argv){
             char ip_address[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &(server.sin_addr.s_addr), ip_address, INET_ADDRSTRLEN);
             clock_t end= clock();
-            if(port!=0){
-            printf("\nDEBUGGING INFORMATION\n--------------------\nPORT:%d\nIP:%s\nRUNNING TIME:%lf\n",port,ip_address,(double)(end-begin)/CLOCKS_PER_SEC);
-            clock_t begin = clock();
-            }
-            else
-            {
-            printf("\nDEBUGGING INFORMATION\n--------------------\nPORT:%d\nIP:%s\nRUNNING TIME:%lf\n",8888,ip_address,(double)(end-begin)/CLOCKS_PER_SEC);
-            }
+            printf("\nDEBUGGING INFORMATION\n--------------------\nPORT:%d\nIP:%s\nRUNNING TIME:%lf\n",8888,ip_address,(double)((end-begin)/CLOCKS_PER_SEC));
             
         }
     }
@@ -122,30 +137,35 @@ int main(int argc, char ** argv){
 
         regex_t reg;
         regmatch_t postmatch[2];
-
+        fflush(stdin);
         int postMatch = regcomp(&reg,"[(^GET)|(^POST)|(HEAD)]",0);
+        char *token=strtok((client_message),"/");
         
-        if (regexec(&reg, client_message,postMatch, postmatch,0)==0){
+        char errMessage[42]="Status Code: 404 / Command not recognized";
 
-            char *token=strtok((client_message),"/");
-            token = strtok(NULL,"/");
+        if(strcmp(token,"POST")==0){
             puts(token);
-
-            // FILE *fp;
-            // if((fp=fopen(token,"r"))==NULL){
-            //     puts("Status Code: 404 / File Not Found");
-            // }
-            // char buff[255];
             
-            // while(fgets(buff, 255, fp)!= NULL){
-            //     puts(buff);
-            // }
+            strtok(NULL,"/");
+            puts(token);
+            char fileName[sizeof(token)];
+            
+            strcpy(fileName,token);
+            strtok(NULL,"/");
+            puts(token);
+            char info[sizeof(token)];
+            strcpy(info,token);
+            generateReply(1,fileName,info);
+            
         }
-        // else{
-
-        // }
-        // write(client_sock , client_message , strlen(client_message));
-        // puts(client_message);
+        if(strcmp(token,"GET")==0){
+            char *file=strtok(NULL," ");
+            
+        }
+        if(strcmp(token,"HEAD")==0){
+            char *file=strtok(NULL," ");
+            
+        }
         
     }
     if(read_size==0){
