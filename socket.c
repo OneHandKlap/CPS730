@@ -24,6 +24,14 @@ int post(char file[], char info[]){
     return 0;
 
 }
+void slice_str(const char * str, char * buffer, int start, int end)
+{
+    size_t j = 0;
+    for ( size_t i = start; i <= end; ++i ) {
+        buffer[j++] = str[i];
+    }
+    buffer[j] = 0;
+}
 void generateReply(int argCommand, char file[], char info[],int client_sock){
 
     if(argCommand==1){
@@ -91,8 +99,8 @@ int main(int argc, char ** argv){
     //prepare sockaddr_in structure
 
     server.sin_family = AF_INET;
-    server.sin_addr.s_addr=INADDR_ANY;
-    // inet_pton(AF_INET, "192.0.2.33", &(server.sin_addr.s_addr));
+    server.sin_addr.s_addr;
+    inet_pton(AF_INET, "192.168.1.115", &(server.sin_addr.s_addr));
     if(port>=8000){
         server.sin_port=htons(port);
     }
@@ -133,38 +141,45 @@ int main(int argc, char ** argv){
     puts("Connection accepted");
 
     while((read_size = recv(client_sock, client_message, sizeof(client_message)-1,0 ))>0){
-
+        puts(client_message); 
         regex_t reg;
         regmatch_t postmatch[2];
         fflush(stdin);
         int postMatch = regcomp(&reg,"[(^GET)|(^POST)|(HEAD)]",0);
-        char *token=strtok((client_message),"/");
+        
+        char* requestArray[20];
+
+        char *token=strtok((client_message)," ");
+        int i=0;
+        
+        while(token !=NULL){
+            requestArray[i++]=token;
+            token=strtok(NULL," ");
+        }
         
         char errMessage[42]="Status Code: 404 / Command not recognized";
 
-        if(strcmp(token,"POST")==0){
-            puts(token);
-            token=strtok(NULL,"/");
+        if(strcmp(requestArray[0],"POST")==0){
+            while((read_size = recv(client_sock, client_message, sizeof(client_message)-1,0 ))>0){
+            
+            char *token2=strtok((client_message),":");
+            while(token2 !=NULL){
+                requestArray[i++]=token2;
+                token2=strtok(NULL,":");
+            }
+            if(strcmp(requestArray[3],"Content-Length")==0){
+                while((read_size = recv(client_sock, client_message, sizeof(client_message)-1,0 ))>0){
+                    printf("ContentLength: %s",requestArray[4]);
+                    printf("Message before trimming: %s",client_message);
+                    // char * toWrite;
+                    // slice_str(client_message,toWrite,0,atoi(requestArray[4]));
+                    // //generateReply(1,requestArray[1],client_message,client_sock);
+                    printf("Message after trimming:");
+                }
 
-            puts(token);
-            char fileName[strlen(token)];
+            }
             
-            strcpy(fileName,token);
-            token=strtok(NULL,"/");
-
-            puts(token);
-            char info[strlen(token)];
-            strcpy(info,token);
-            generateReply(1,fileName,info,client_sock);
-            
-        }
-        if(strcmp(token,"GET")==0){
-            char *file=strtok(NULL," ");
-            
-        }
-        if(strcmp(token,"HEAD")==0){
-            char *file=strtok(NULL," ");
-            
+            }
         }
         
     }
