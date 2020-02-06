@@ -49,22 +49,6 @@ void generateReply(int argCommand, char file[], char info[],int client_sock){
         }
 
     }
-    // if(argCommand==2){
-    //     //STUFF FOR GET
-    //     //retrieve GET function status code
-    //     //retrieve HEADERS
-    //     //retrieve file lines
-    //     //FORMAT
-    //     //PRINt/PUT/WRITE (from file)
-        
-    // }
-    // if(argCommand==3){
-    //     //STUFF FOR HEAD
-    //     //retrieve GET function status code
-    //     //retrieve HEADERS
-    //     //retrieve file lines
-    //     //FORMAT
-    // }
     else{
         printf("error invalid command selection generateReply");
     }
@@ -79,6 +63,8 @@ int main(int argc, char ** argv){
     int socket_desc, client_sock, c ,read_size;
     struct sockaddr_in server, client;
     char client_message[2000];
+    char client_message2[2000];
+    char client_message3[2000];
     char* reply_message;
     int port=0;
 
@@ -100,7 +86,7 @@ int main(int argc, char ** argv){
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr;
-    inet_pton(AF_INET, "192.168.1.115", &(server.sin_addr.s_addr));
+    inet_pton(AF_INET, "10.17.175.206", &(server.sin_addr.s_addr));
     if(port>=8000){
         server.sin_port=htons(port);
     }
@@ -141,47 +127,62 @@ int main(int argc, char ** argv){
     puts("Connection accepted");
 
     while((read_size = recv(client_sock, client_message, sizeof(client_message)-1,0 ))>0){
-        puts(client_message); 
+        puts(client_message);
+        if(strcmp(client_message,"\0")==0){
+            puts("empty message");
+        } 
         regex_t reg;
         regmatch_t postmatch[2];
         fflush(stdin);
         int postMatch = regcomp(&reg,"[(^GET)|(^POST)|(HEAD)]",0);
-        
-        char* requestArray[20];
 
         char *token=strtok((client_message)," ");
-        int i=0;
         
-        while(token !=NULL){
-            requestArray[i++]=token;
-            token=strtok(NULL," ");
-        }
-        
-        char errMessage[42]="Status Code: 404 / Command not recognized";
+        char *requestType=token;
+        token=strtok(NULL," ");
+        char *fileName=token;
 
-        if(strcmp(requestArray[0],"POST")==0){
-            while((read_size = recv(client_sock, client_message, sizeof(client_message)-1,0 ))>0){
+        if(strcmp(requestType,"POST")==0){
+            while((read_size = recv(client_sock, client_message2, sizeof(client_message),0 ))>0){
+            char *token2=strtok((client_message2),":");
+            char* secondLine=token2;
             
-            char *token2=strtok((client_message),":");
-            while(token2 !=NULL){
-                requestArray[i++]=token2;
-                token2=strtok(NULL,":");
-            }
-            if(strcmp(requestArray[3],"Content-Length")==0){
-                while((read_size = recv(client_sock, client_message, sizeof(client_message)-1,0 ))>0){
-                    printf("ContentLength: %s",requestArray[4]);
-                    printf("Message before trimming: %s",client_message);
-                    // char * toWrite;
-                    // slice_str(client_message,toWrite,0,atoi(requestArray[4]));
-                    // //generateReply(1,requestArray[1],client_message,client_sock);
-                    printf("Message after trimming:");
+            token2=strtok(NULL,":");
+            int contentLength=atoi(token2);
+
+            if(strcmp(secondLine,"Content-Length")==0){
+                //printf("\n%s\n%s\n%d\n",requestType,fileName,contentLength);
+                WAIT: while((read_size = recv(client_sock, client_message3, sizeof(client_message),0 ))>0){
+                    if (strlen(client_message3)>2){
+                        FILE *fp;
+                        
+                        if(fopen(fileName,"w")!=NULL){
+                            char *token3=strtok(client_message3," ");
+                            while (token3!=NULL){
+                                puts(token3);
+                                //fwrite(token3,1,sizeof(token3),fp);
+                                token3=strtok(NULL," ");
+                            }
+                            
+                            fclose(fp);
+                        }
+                        else{
+                            puts("ERROR writing to file");
+                        }
+
+                    }
+                    else{
+                        goto WAIT;
+                    }
                 }
-
-            }
-            
+                }
             }
         }
-        
+        else{
+            write(client_sock,"Error\n",6);
+            write(client_sock,"IDIOT",5);
+        }
+        goto WAIT;
     }
     if(read_size==0){
         puts("Client disconnected");
