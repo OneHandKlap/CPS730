@@ -25,6 +25,31 @@ int post(char file[], char info[]){
 
 }
 
+void writeHeaders(int client_sock){
+    struct tm strtime;
+    time_t timeoftheday;
+    struct tm *loc_time;
+    timeoftheday=time(NULL);
+    loc_time=localtime(&timeoftheday);
+    
+    write (client_sock,"\nHost-Name: 10.17.175.206",25);
+    write(client_sock,"\nContent-Length: 80",19);
+    write(client_sock,"\n",2);
+    write(client_sock,asctime(loc_time),strlen(asctime(loc_time)));
+    write(client_sock,"Content-type: txt/html\n",23);
+    write(client_sock,"\n",2);
+
+}
+void write200(int client_sock, char * httpType){
+    char message[50];
+    printf("%s",httpType);
+    char *success=" 200 OK";
+    strcpy(message,httpType);
+    strcpy(message, success);
+    write(client_sock,message,strlen(message));
+
+}
+
 void slice_str(const char * str, char * buffer, int start, int end)
 {
     int j = 0;
@@ -86,7 +111,7 @@ int main(int argc, char ** argv){
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr;
-    inet_pton(AF_INET, "192.168.1.115", &(server.sin_addr.s_addr));
+    inet_pton(AF_INET, "10.17.175.206", &(server.sin_addr.s_addr));
     if(port>=8000){
         server.sin_port=htons(port);
     }
@@ -141,6 +166,11 @@ int main(int argc, char ** argv){
         char *requestType=token;
         token=strtok(NULL," ");
         char *fileName=token;
+        token=strtok(NULL," ");
+        
+        char *httpType=token;
+        
+        printf("%s\n",httpType);
         FILE *fp;
         fp=fopen(fileName,"w+");
         if(fp!=NULL){
@@ -164,7 +194,8 @@ int main(int argc, char ** argv){
                             fwrite(toWrite,sizeof(char),sizeof(toWrite),fp);
                             //printf("Wrote: %s\nLength: %ld\n",toWrite, sizeof(toWrite));
                             fclose(fp);
-                            //success message
+                            write200(client_sock,httpType);
+                            writeHeaders(client_sock);
                             close(client_sock);
                         }
 
@@ -182,7 +213,7 @@ int main(int argc, char ** argv){
 
     }
     else if(read_size==-1){
-        perror("receive failed");
+        //perror("receive failed");
     }
 
     close(socket_desc);
