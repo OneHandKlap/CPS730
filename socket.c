@@ -24,13 +24,13 @@ int post(char file[], char info[]){
     return 0;
 
 }
+
 void slice_str(const char * str, char * buffer, int start, int end)
 {
-    size_t j = 0;
-    for ( size_t i = start; i <= end; ++i ) {
-        buffer[j++] = str[i];
+    int j = 0;
+    for ( int i = start; i < end; i++, j++ ) {
+        buffer[j] = str[i];
     }
-    buffer[j] = 0;
 }
 void generateReply(int argCommand, char file[], char info[],int client_sock){
 
@@ -86,7 +86,7 @@ int main(int argc, char ** argv){
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr;
-    inet_pton(AF_INET, "10.17.175.206", &(server.sin_addr.s_addr));
+    inet_pton(AF_INET, "192.168.1.115", &(server.sin_addr.s_addr));
     if(port>=8000){
         server.sin_port=htons(port);
     }
@@ -141,48 +141,41 @@ int main(int argc, char ** argv){
         char *requestType=token;
         token=strtok(NULL," ");
         char *fileName=token;
+        FILE *fp;
+        fp=fopen(fileName,"w+");
+        if(fp!=NULL){
 
-        if(strcmp(requestType,"POST")==0){
-            while((read_size = recv(client_sock, client_message2, sizeof(client_message),0 ))>0){
-            char *token2=strtok((client_message2),":");
-            char* secondLine=token2;
-            
-            token2=strtok(NULL,":");
-            int contentLength=atoi(token2);
+            if(strcmp(requestType,"POST")==0){
+                while((read_size = recv(client_sock, client_message2, sizeof(client_message),0 ))>0){
+                char *token2=strtok((client_message2),":");
+                char* secondLine=token2;
+                
+                
+                token2=strtok(NULL,":");
+                int contentLength=atoi(token2);
 
-            if(strcmp(secondLine,"Content-Length")==0){
-                //printf("\n%s\n%s\n%d\n",requestType,fileName,contentLength);
-                WAIT: while((read_size = recv(client_sock, client_message3, sizeof(client_message),0 ))>0){
-                    if (strlen(client_message3)>2){
-                        FILE *fp;
+                if(strcmp(secondLine,"Content-Length")==0){
+                    //printf("\n%s\n%s\n%d\n",requestType,fileName,contentLength);
+                    while((read_size = recv(client_sock, client_message3, sizeof(client_message),0 ))>0){
                         
-                        if(fopen(fileName,"w")!=NULL){
-                            char *token3=strtok(client_message3," ");
-                            while (token3!=NULL){
-                                puts(token3);
-                                //fwrite(token3,1,sizeof(token3),fp);
-                                token3=strtok(NULL," ");
-                            }
+                            char toWrite[contentLength];
+                            slice_str(client_message3,toWrite,0,contentLength);
                             
+                            fwrite(toWrite,sizeof(char),sizeof(toWrite),fp);
+                            //printf("Wrote: %s\nLength: %ld\n",toWrite, sizeof(toWrite));
                             fclose(fp);
-                        }
-                        else{
-                            puts("ERROR writing to file");
+                            //success message
+                            close(client_sock);
                         }
 
                     }
-                    else{
-                        goto WAIT;
-                    }
-                }
                 }
             }
         }
         else{
-            write(client_sock,"Error\n",6);
-            write(client_sock,"IDIOT",5);
+            write(client_sock,"Error 404: File not found\n",26);
+            close(client_sock);
         }
-        goto WAIT;
     }
     if(read_size==0){
         puts("Client disconnected");
