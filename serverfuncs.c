@@ -1,5 +1,30 @@
 #include "server.h"
 
+int check_config(const char * str){
+	FILE * fp;
+	int isFound=0;
+	fp=fopen("conf.cfg","r");
+	char line[256];
+	char *token;
+	if(fp!=NULL){
+
+		while(fgets(line, sizeof(line),fp)){
+			token=strtok(line," ");
+			while(token!=NULL){
+				puts(token);
+				if(strcmp(token,str)==1){
+					isFound=1;
+				}
+				token=strtok(NULL," ");
+			}
+		}
+	}
+	else{
+		perror("Missing config file");
+	}
+	return isFound;
+}
+
 void slice_str(const char * str, char * buffer, int start, int end)
 {
     int j = 0;

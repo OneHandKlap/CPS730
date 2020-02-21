@@ -78,9 +78,15 @@ int main(int argc, char *argv[]){
         		token = strtok(NULL, " ");
 			++i;
     		}
-			printf("struct: %s %s %s \n", client_request.type, client_request.path, client_request.protocol);
-			fflush(stdout);
+			//printf("struct: %s %s %s \n", client_request.type, client_request.path, client_request.protocol);
+			//fflush(stdout);
+			if(check_config(client_request.protocol)==1){
 			process_request(client_sock, client_request.type, client_request.path);
+			}
+			else{
+				puts("400 Bad Request: wrong protocol");
+				close(client_sock);
+			}
 		}
 	if(read_size==0){
        		 puts("Client disconnected");	
