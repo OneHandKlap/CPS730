@@ -32,8 +32,8 @@ void writeHeaders(int client_sock){
     timeoftheday=time(NULL);
     loc_time=localtime(&timeoftheday);
     
-    write (client_sock,"\nHost-Name: 10.17.175.206",25);
-    write(client_sock,"\nContent-Length: 80",19);
+    write (client_sock,"\nHost-Name: 172.17.96.81",25);
+    write(client_sock,"\nContent-Length: 110",20);
     write(client_sock,"\n",2);
     write(client_sock,asctime(loc_time),strlen(asctime(loc_time)));
     write(client_sock,"Content-type: txt/html\n",23);
@@ -43,7 +43,7 @@ void writeHeaders(int client_sock){
 void write200(int client_sock, char * httpType){
     char message[50];
     printf("%s",httpType);
-    char *success=" 200 OK";
+    char *success="Status: 201";
     strcpy(message,httpType);
     strcpy(message, success);
     write(client_sock,message,strlen(message));
@@ -111,7 +111,7 @@ int main(int argc, char ** argv){
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr;
-    inet_pton(AF_INET, "10.17.175.206", &(server.sin_addr.s_addr));
+    inet_pton(AF_INET, "172.17.96.81", &(server.sin_addr.s_addr));
     if(port>=8000){
         server.sin_port=htons(port);
     }
@@ -166,6 +166,7 @@ int main(int argc, char ** argv){
         char *requestType=token;
         token=strtok(NULL," ");
         char *fileName=token;
+        if(fileName[0]=='/')fileName++;
         token=strtok(NULL," ");
         
         char *httpType=token;
@@ -201,6 +202,13 @@ int main(int argc, char ** argv){
 
                     }
                 }
+            }
+
+            //Conditions for Head/Get
+
+            else{
+                write(client_sock,"Error 400: Bad Request\n",24);
+                close(client_sock);
             }
         }
         else{
