@@ -13,6 +13,7 @@
 #include <regex.h>
 
 int check_config(const char * str);
+void chop_newLine( char *s );
 void slice_str(const char * str, char * buffer, int start, int end);
 int content_chars_length(int n);
 int send_status(char operation, int succeed);

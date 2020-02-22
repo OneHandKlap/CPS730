@@ -1,27 +1,29 @@
 #include "server.h"
 
+
+void chop_newLine(char *s) {
+    while(*s && *s != '\n' && *s != '\r') s++;
+    *s = 0;
+}
+
 int check_config(const char * str){
 	FILE * fp;
 	int isFound=0;
 	fp=fopen("conf.cfg","r");
-	char line[256];
-	char *token;
+	char line[1000];
+	char token[50];
 	if(fp!=NULL){
-
-		while(fgets(line, sizeof(line),fp)){
-			token=strtok(line," ");
-			while(token!=NULL){
-				puts(token);
-				if(strcmp(token,str)==1){
+		while (fscanf(fp, "%s", token) != EOF) {
+			if(strcmp(token,str)==0){
 					isFound=1;
-				}
-				token=strtok(NULL," ");
+					break;
 			}
 		}
 	}
 	else{
 		perror("Missing config file");
 	}
+	fclose(fp);
 	return isFound;
 }
 
