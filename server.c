@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
 
         //connect
    	client_sock=accept(socket_desc, (struct sockaddr*)&client, (socklen_t*)&c);
-   	 if (client_sock < 0){
+   	if (client_sock < 0){
        		 perror("accept failed");
         	 return 1;
  }
@@ -65,29 +65,34 @@ int main(int argc, char *argv[]){
 		char* token = strtok(client_message, " ");
 		int i = 1;
 		while (token != NULL) { 
-			if(strcmp(token, "GET") == 0 || strcmp(token, "POST") == 0 || strcmp(token, "HEAD") == 0){
-				client_request.type = token;
-			}	
-			else if(i == 2){
-                client_request.path = token;
-            }
-
-			else if(i == 3){
-				client_request.protocol = token;
+				if(strcmp(token, "GET") == 0 || strcmp(token, "POST") == 0 || strcmp(token, "HEAD") == 0){
+					client_request.type = token;
+				}	
+				else{
+					send_error(client_sock, BAD_REQUEST);
+					break;
+				}
+				
+				if(i == 2){
+					client_request.path = token;
+				}
+				else if(i == 3){
+					client_request.protocol = token;
+				}
+					token = strtok(NULL, " ");
+				++i;
 			}
-        		token = strtok(NULL, " ");
-			++i;
-    		}
 			printf("struct: %s %s %s \n", client_request.type, client_request.path, client_request.protocol);
 			fflush(stdout);
 			process_request(client_sock, client_request.type, client_request.path);
 		}
+
 	if(read_size==0){
        		 puts("Client disconnected");	
     }
-    	else if(read_size==-1){
-        	perror("receive failed");
-   }
+	else if(read_size==-1){
+		perror("receive failed");
+	}
 close(socket_desc);
 return 0;
 }
