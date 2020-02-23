@@ -49,13 +49,6 @@ int content_chars_length(int n){
 	return count;
 }
 
-int send_status(char operation, int succeed){
-	if(operation == 'r' && succeed){
-		return OK;		
-	}
-	return 0;
-}
-
 /*
 Headers to be displayed to client when they receive a response from server
 */
@@ -83,64 +76,89 @@ char* file always starts with '/' character.
 OUTPUT: char* get_filename returns the name of file without '/' character. 
 */
 char* get_filename(char* file){
-	char* new_file = (char*)malloc(strlen(file)-1);
-	strncpy(new_file, file + 1, strlen(file) - 1);
+	// char* new_file = (char*)malloc(strlen(file)-1);
+	// strncpy(new_file, file + 1, strlen(file) - 1);
 
-	return new_file;
+	// return new_file;
+	if(file[0] == '/'){
+		file++;
+	}
+	return file;
 }
 
-void send_get(int client_sock, char* file){
+int send_get(int client_sock, char* file){
 	FILE* f;
 	char* temp_filename = get_filename(file);	
-	int succeed = 1;
+	int status=OK;
 
 	if((f = fopen(temp_filename,"r")) == NULL){
-		fprintf(stderr, "Can't resolve the file\n");
-		succeed = 0;
+
+		status=NOT_FOUND;
 	}
 	char S[1000];
+	if(status == OK){
+		while(fgets(S, 1000, f) != NULL){
+			fflush(stdout);
+		}
 
-	while(fgets(S, 1000, f) != NULL){
-		fflush(stdout);
-	}
-	int code = send_status('r', succeed);
-	char status_code_message[20];
-	sprintf(status_code_message, "\nStatus Code: %d", code);
-
-	write(client_sock, status_code_message, strlen(status_code_message));
+	// while(fgets(S, 1000, f) != NULL){
+	// 	fflush(stdout);
+	// }
+	// int code = send_status('r', succeed);
+	// char status_code_message[20];
+	// sprintf(status_code_message, "\nStatus Code: %d", code);
+	send_status(client_sock, status);
 	write_headers(client_sock, strlen(S));
 	write(client_sock, S, strlen(S));
+
+	// write(client_sock, status_code_message, strlen(status_code_message));
+	// write_headers(client_sock, strlen(S));
+	// write(client_sock, S, strlen(S));
 	
+	// fclose(f);
+	// free(temp_filename);
 	fclose(f);
-	free(temp_filename);
+	return(0);
+	}
+	else{
+		send_status(client_sock, status);
+		write_headers(client_sock, strlen(S));
+	}
 }
 
-void send_head(int client_sock, char* file){
+
+int send_head(int client_sock, char* file){
 	FILE* f;
-	char* temp_filename = get_filename(file);	
+	char* temp_filename = get_filename(file);
+	int status=OK;	
 
 	if((f = fopen(temp_filename,"r")) == NULL){
-		fprintf(stderr, "Can't resolve the file\n");
-		exit(2);
+		status=NOT_FOUND;
 	}
 	char S[1000];
-
-	while(fgets(S, 1000, f) != NULL){
-
-		//printf("%s\n", S);
-		fflush(stdout);
+	if(status == OK){
+		while(fgets(S, 1000, f) != NULL){
+			fflush(stdout);
+		}
+		send_status(client_sock, status);
+		write_headers(client_sock, strlen(S));
+		return(0);
+		fclose(f);
 	}
+	else{
+	send_status(client_sock, status);
 	write_headers(client_sock, strlen(S));
-
-	fclose(f);
-	free(temp_filename);
+	return(1);
+	}
+	
 }
 
-void send_post(int client_sock, char* file){
+int send_post(int client_sock, char* file){
 	FILE *fp;
+	int status = CREATED;
 	if((fp = fopen(get_filename(file),"w+")) == NULL){
-		fprintf(stderr, "Can't resolve the file\n");
-		exit(2);
+
+		status = NOT_FOUND;
 	}
 	char client_message2[1000];
 	char client_message3[1000];
@@ -167,10 +185,15 @@ void send_post(int client_sock, char* file){
                     		//fflush(stdout);
 							fclose(fp);
                             // write200(client_sock,httpType);
+							send_status(client_sock, status);
                             write_headers(client_sock, contentLength);
+							return(0);
                         }
 
                     }
+					status=BAD_REQUEST;
+					send_error(client_sock,status);
+					return(1);
                 }
 	}
 }
@@ -179,19 +202,83 @@ void send_post(int client_sock, char* file){
 GET request implementation
 to-do: HEAD and POST
 */
-void process_request(int client_sock, char* type, char* file){
+int process_request(int client_sock, char* type, char* file){
 	if(strcmp(type, "GET") == 0){
-		send_get(client_sock, file);
+		if(send_get(client_sock, file)==0){
+			printf("Success");
+			return (0);
+		}
+		else{
+			printf("FAIL");
+			return (1);
+		}
 	}
 	if(strcmp(type, "HEAD") == 0){
-		send_head(client_sock, file);
+		if(send_head(client_sock, file)==0){
+			return (0);
+			printf("Success");
+		}
+		else{
+			printf("FAIL");
+			return (1);
+		}
 	}
 	if(strcmp(type, "POST") == 0){
-		send_post(client_sock, file);
+		if(send_post(client_sock, file)==0){
+			return (0);
+			printf("Success");
+		}
+		else{
+			printf("FAIL");
+			return (1);
+		}
 	}
 }
 
 void clear_buffer(){
 	int c;
 	while ((c = getchar()) != '\n' && c != EOF) { }
+}
+
+void send_status(int client_sock, int status){
+	char status_code_message[20];
+
+	switch(status){
+		case 200:
+			sprintf(status_code_message, "\nStatus Code: %d", OK);
+			write(client_sock, status_code_message, strlen(status_code_message));
+			break;
+		case 201:
+			sprintf(status_code_message, "\nStatus Code: %d", CREATED);
+			write(client_sock, status_code_message, strlen(status_code_message));
+			break;
+		case 400:
+			sprintf(status_code_message, "\nStatus Code: %d", BAD_REQUEST);
+			write(client_sock, status_code_message, strlen(status_code_message));
+			break;
+		case 404:
+			sprintf(status_code_message, "\nStatus Code: %d", NOT_FOUND);
+			write(client_sock, status_code_message, strlen(status_code_message));
+			break;
+		default:
+			write(client_sock, "\nStatus Code: 500", 19);
+			break;
+	}
+}
+
+void send_error(int client_sock, int status_code){
+	struct tm strtime;
+	time_t timeoftheday;
+	struct tm *loc_time;
+	timeoftheday=time(NULL);
+	loc_time=localtime(&timeoftheday);
+
+	send_status(client_sock, status_code);
+
+	write(client_sock, "\nContent-Length: 0", 19);
+	write(client_sock,"\nHost-Name: 10.17.175.206",25);
+	write(client_sock,"\n",2);
+	write(client_sock,asctime(loc_time),strlen(asctime(loc_time)));
+	write(client_sock,"\n",2);
+
 }
