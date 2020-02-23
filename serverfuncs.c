@@ -168,7 +168,6 @@ void send_post(int client_sock, char* file){
 							fclose(fp);
                             // write200(client_sock,httpType);
                             write_headers(client_sock, contentLength);
-                            close(client_sock);
                         }
 
                     }

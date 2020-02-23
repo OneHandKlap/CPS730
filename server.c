@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
    	 if (client_sock < 0){
        		 perror("accept failed");
         	 return 1;
- }
+ 	}
    	 puts("Connection accepted");
 
 	//main loop to handle client requests
@@ -107,22 +107,23 @@ int main(int argc, char *argv[]){
 			++i;
     		}
 
-			char temp[sizeof(client_request.path)];
-			char *fileEnding;
-			memcpy(fileEnding,client_request.path,sizeof(client_request.path)*4);
+		char temp[sizeof(client_request.path)];
+		char *fileEnding;
+		memcpy(fileEnding,client_request.path,sizeof(client_request.path)*4);
 
-			fileEnding=strtok(fileEnding,".");
-			fileEnding=strtok(NULL,".");
+		fileEnding=strtok(fileEnding,".");
+		fileEnding=strtok(NULL,".");
 
 
-			if((check_config(client_request.protocol)==1)& (check_config(fileEnding)==1)){
-				process_request(client_sock, client_request.type, client_request.path);
-			}
-			else{
-				puts("400 Bad Request: wrong protocol");
-				close(client_sock);
-			}
+		if((check_config(client_request.protocol)==1)& (check_config(fileEnding)==1)){
+			process_request(client_sock, client_request.type, client_request.path);
 		}
+		else{
+			puts("400 Bad Request: wrong protocol");
+			close(client_sock);
+		}
+	}
+
     if(read_size==0){
         puts("Client disconnected");
 
@@ -131,6 +132,5 @@ int main(int argc, char *argv[]){
         //perror("receive failed");
     }
 
-    close(socket_desc);
-    return 0;
+
 }
