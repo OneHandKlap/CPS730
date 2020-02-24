@@ -136,7 +136,7 @@ int main(int argc, char *argv[]){
 
 		if((check_config(client_request.protocol)==1)& (check_config(fileEnding)==1)){
 			if(process_request(client_sock, client_request.type, client_request.path)==1){
-				printf("%d",process_request(client_sock, client_request.type, client_request.path));
+				// printf("%d",process_request(client_sock, client_request.type, client_request.path));
 				break;
 			}
 		}

@@ -123,6 +123,7 @@ int send_get(int client_sock, char* file){
 	else{
 		send_status(client_sock, status);
 		write_headers(client_sock, strlen(S));
+		return(1);
 	}
 }
 
@@ -233,6 +234,7 @@ int process_request(int client_sock, char* type, char* file){
 			return (1);
 		}
 	}
+	return(1);
 }
 
 void clear_buffer(){
