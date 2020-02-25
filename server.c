@@ -1,5 +1,6 @@
 #include "server.h"
 
+
 struct Request{
 	char* type;
 	char* path;
@@ -9,6 +10,8 @@ struct Request{
 
 
 int main(int argc, char *argv[]){
+
+
 
 	//Create a socket
 	int port;
@@ -93,7 +96,7 @@ int main(int argc, char *argv[]){
 		int i = 1;
 		while (token != NULL) { 
 			
-			puts(token);
+			chop_newLine(token);
 			
 			if((strcmp(token, "GET") != 0 && strcmp(token, "POST") != 0  && strcmp(token, "HEAD") != 0 && strcmp(token,"!Q")!=0)&&(i==1)){
 				send_error(client_sock, NOT_IMPLEMENTED);
@@ -124,19 +127,20 @@ int main(int argc, char *argv[]){
 			token = strtok(NULL, " ");
 			++i;	
 		}
-
+		
 		if (client_request.protocol != NULL && client_request.type!=NULL && client_request.path!=NULL){
 			chop_newLine(client_request.protocol);
 			char temp[sizeof(client_request.path)];
-			char *fileEnding;
+			char*fileEnding = malloc(sizeof(client_request.path));
+			
 			memcpy(fileEnding,client_request.path,sizeof(client_request.path)*4);
-
+			
 			fileEnding=strtok(fileEnding,".");
 			fileEnding=strtok(NULL,".");
 			
 			if((check_forbidden(client_request.path)==1)){
 				send_error(client_sock, FORBIDDEN);
-				struct Request client_request={0};
+				//struct Request client_request={0};
 				break;
 				
 			}
@@ -151,10 +155,7 @@ int main(int argc, char *argv[]){
 				break;
 			}
 		}
-		else{
-			send_error(client_sock, BAD_REQUEST);
-			break;
-		}
+	
 	}
 
     if(read_size==0){
@@ -164,7 +165,10 @@ int main(int argc, char *argv[]){
     else if(read_size==-1){
         perror("receive failed");
     }
-	
-	close(socket_desc);
-	return (0);
+	client_request.protocol = NULL;
+	client_request.type = NULL;
+	client_request.path = NULL;
+	// close(client_sock);
+	// close(socket_desc);
+	exit (0);
 }
