@@ -27,5 +27,6 @@ int send_post(int client_sock, char* file);
 int process_request(int client_sock, char* type, char* file);
 void send_status(int client_sock, int status);
 void send_error(int client_sock, int status_code);
+int check_forbidden(const char * str);
 
 

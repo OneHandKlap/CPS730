@@ -26,6 +26,27 @@ int check_config(const char * str){
 	return isFound;
 }
 
+int check_forbidden(const char * str){
+	FILE * fp;
+	int isFound=0;
+	fp=fopen("forbidden.cfg","r");
+	char line[1000];
+	char token[50];
+	if(fp!=NULL){
+		while (fscanf(fp, "%s", token) != EOF) {
+			if(strcmp(token,str)==0){
+					isFound=1;
+					break;
+			}
+		}
+	}
+	else{
+		perror("Missing forbidden file");
+	}
+	fclose(fp);
+	return isFound;
+}
+
 void slice_str(const char * str, char * buffer, int start, int end)
 {
     int j = 0;
@@ -225,6 +246,10 @@ void send_status(int client_sock, int status){
 			break;
 		case 201:
 			sprintf(status_code_message, "\nStatus Code: %d", CREATED);
+			write(client_sock, status_code_message, strlen(status_code_message));
+			break;
+		case 403:
+			sprintf(status_code_message, "\nStatus Code: %d", FORBIDDEN);
 			write(client_sock, status_code_message, strlen(status_code_message));
 			break;
 		case 400:

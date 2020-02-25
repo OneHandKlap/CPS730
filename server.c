@@ -134,18 +134,26 @@ int main(int argc, char *argv[]){
 			fileEnding=strtok(fileEnding,".");
 			fileEnding=strtok(NULL,".");
 			
+			if((check_forbidden(client_request.path)==1)){
+				send_error(client_sock, FORBIDDEN);
+				struct Request client_request={0};
+				break;
+				
+			}
 
-			if((check_config(client_request.protocol)==1)& (check_config(fileEnding)==1)){
+			if((check_config(client_request.protocol)==1) & (check_config(fileEnding)==1)){
 				if(process_request(client_sock, client_request.type, client_request.path)==1){
 					break;
 				}
 			}
 			else{
 				send_error(client_sock,BAD_REQUEST);
+				break;
 			}
 		}
 		else{
 			send_error(client_sock, BAD_REQUEST);
+			break;
 		}
 	}
 
@@ -156,6 +164,7 @@ int main(int argc, char *argv[]){
     else if(read_size==-1){
         perror("receive failed");
     }
+	
 	close(socket_desc);
 	return (0);
 }
