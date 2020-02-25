@@ -95,42 +95,42 @@ int main(int argc, char *argv[]){
 			
 			puts(token);
 			
-			if((strcmp(token, "GET") == 0 || strcmp(token, "POST") == 0 || strcmp(token, "HEAD") == 0)&(i==1)){
-					client_request.type = token;
+			if((strcmp(token, "GET") >0 && strcmp(token, "POST") >0  && strcmp(token, "HEAD") >0 && strcmp(token,"!Q")>0)&&(i==1)){
+				send_error(client_sock, BAD_REQUEST);
+				break;
 				
 				// printf("struct: %s %s %s \n",client_request.type, client_request.path, client_request.protocol);
 				
 			}
+			else if(i==1){
+				chop_newLine(token);
+				puts(token);
+				if(strcmp(token,"!Q")==0){
+					printf("BYE BYE");
+					exit(0);
+				}
+				client_request.type=token;
+				
+			}
 			else if(i == 2){
-					client_request.path = token;
+				if(token==NULL){
+					send_error(client_sock, BAD_REQUEST);
+				}
+				client_request.path = token;
 			}
 			else if(i == 3){
+				if (token ==NULL){
+					send_error(client_sock, BAD_REQUEST);
+				}
 				client_request.protocol = token;
 			}
-			else if(strcmp(token,"!Q")==0){
-				printf("BYE BYE");
-				exit(0);
-			}
-			else if(strcmp(token,"\n")==0){
-				printf("EMPTY LINE");
-			}
-			else{
-				send_error(client_sock, BAD_REQUEST);
-				break;
-			}
-
-			chop_newLine(token);
 			
-			
-			// else if (i==1){
-			// 	send_error(client_sock, BAD_REQUEST);
-			// 	break;
-			// }
 			token = strtok(NULL, " ");
 			++i;	
 
 		}
-		if (client_request.protocol != NULL){
+
+		if (client_request.protocol != NULL && client_request.type!=NULL && client_request.path!=NULL){
 			chop_newLine(client_request.protocol);
 			char temp[sizeof(client_request.path)];
 			char *fileEnding;
@@ -149,6 +149,9 @@ int main(int argc, char *argv[]){
 			else{
 				send_error(client_sock,BAD_REQUEST);
 			}
+		}
+		else{
+			send_error(client_sock, BAD_REQUEST);
 		}
 	}
 
