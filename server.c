@@ -74,74 +74,75 @@ int main(int argc, char *argv[]){
        		 perror("accept failed");
         	 return 1;
  	}
-   	 puts("Connection accepted");
+   	puts("Connection accepted");
+	write(client_sock, "Disconnect by typing : '!Q'\n",28);
 
 	//main loop to handle client requests
 	while((read_size = recv(client_sock, client_message, sizeof(client_message),0)) > 0){
-		if(strcmp(client_message, "\0") == 0){
+		if(sizeof(read_size) <= 0){
 			printf("Empty message\n");
 		}
 		else{
 			puts(client_message);
 		}
-		fflush(stdout);
+		
 
 	//divide incoming string into tokens
 
 		char* token = strtok(client_message, " ");
 		int i = 1;
 		while (token != NULL) { 
-			// if(strcmp(token, "GET") == 0 || strcmp(token, "POST") == 0 || strcmp(token, "HEAD") == 0){
-			// 	client_request.type = token;
-			// }	
-			// if(i == 2){
-            //     client_request.path = token;
-
-            // }
-
-			// if(i == 3){
-			// 	client_request.protocol = token;
-			// 	chop_newLine(client_request.protocol);
-			// }
-        	// 	token = strtok(NULL, " ");
-			// ++i;
-    		// }
+			
 			puts(token);
-			if(strcmp(token, "GET") == 0 || strcmp(token, "POST") == 0 || strcmp(token, "HEAD") == 0){
+			
+			if((strcmp(token, "GET") == 0 || strcmp(token, "POST") == 0 || strcmp(token, "HEAD") == 0)&(i==1)){
 					client_request.type = token;
-				}	
-				// if{
-				// 	send_error(client_sock, BAD_REQUEST);
-				// 	break;
-				// }
-
-			if(i == 2){
-				client_request.path = token;
+				
+				// printf("struct: %s %s %s \n",client_request.type, client_request.path, client_request.protocol);
+				
 			}
+			chop_newLine(token);
+			if(strcmp(token,"!Q")==0){
+				printf("BYE BYE");
+				exit(0);
+			}
+			
+			else if (i==1){
+				send_error(client_sock, BAD_REQUEST);
+				break;
+			}
+			else if(strcmp(token,"\n")==0){
+				printf("EMPTY LINE");
+			}
+			if(i == 2){
+					client_request.path = token;
+				}
 			if(i == 3){
 				client_request.protocol = token;
 			}
-			printf("struct: %s %s %s \n",client_request.type, client_request.path, client_request.protocol);
 			token = strtok(NULL, " ");
-			++i;
+			++i;	
+
 		}
-		chop_newLine(client_request.protocol);
-		char temp[sizeof(client_request.path)];
-		char *fileEnding;
-		memcpy(fileEnding,client_request.path,sizeof(client_request.path)*4);
+		if (client_request.protocol != NULL){
+			chop_newLine(client_request.protocol);
+			char temp[sizeof(client_request.path)];
+			char *fileEnding;
+			memcpy(fileEnding,client_request.path,sizeof(client_request.path)*4);
 
-		fileEnding=strtok(fileEnding,".");
-		fileEnding=strtok(NULL,".");
+			fileEnding=strtok(fileEnding,".");
+			fileEnding=strtok(NULL,".");
+			
 
-
-		if((check_config(client_request.protocol)==1)& (check_config(fileEnding)==1)){
-			if(process_request(client_sock, client_request.type, client_request.path)==1){
-				// printf("%d",process_request(client_sock, client_request.type, client_request.path));
-				break;
+			if((check_config(client_request.protocol)==1)& (check_config(fileEnding)==1)){
+				if(process_request(client_sock, client_request.type, client_request.path)==1){
+					// printf("%d",process_request(client_sock, client_request.type, client_request.path));
+					break;
+				}
 			}
-		}
-		else{
-			send_error(client_sock,BAD_REQUEST);
+			else{
+				send_error(client_sock,BAD_REQUEST);
+			}
 		}
 	}
 
@@ -150,7 +151,7 @@ int main(int argc, char *argv[]){
 
     }
     else if(read_size==-1){
-        //perror("receive failed");
+        perror("receive failed");
     }
 	close(socket_desc);
 	return (0);
