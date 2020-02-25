@@ -101,25 +101,31 @@ int main(int argc, char *argv[]){
 				// printf("struct: %s %s %s \n",client_request.type, client_request.path, client_request.protocol);
 				
 			}
-			chop_newLine(token);
-			if(strcmp(token,"!Q")==0){
+			else if(i == 2){
+					client_request.path = token;
+			}
+			else if(i == 3){
+				client_request.protocol = token;
+			}
+			else if(strcmp(token,"!Q")==0){
 				printf("BYE BYE");
 				exit(0);
-			}
-			
-			else if (i==1){
-				send_error(client_sock, BAD_REQUEST);
-				break;
 			}
 			else if(strcmp(token,"\n")==0){
 				printf("EMPTY LINE");
 			}
-			if(i == 2){
-					client_request.path = token;
-				}
-			if(i == 3){
-				client_request.protocol = token;
+			else{
+				send_error(client_sock, BAD_REQUEST);
+				break;
 			}
+
+			chop_newLine(token);
+			
+			
+			// else if (i==1){
+			// 	send_error(client_sock, BAD_REQUEST);
+			// 	break;
+			// }
 			token = strtok(NULL, " ");
 			++i;	
 
