@@ -1,6 +1,5 @@
 #include "server.h"
 
-
 void chop_newLine(char *s) {
     while(*s && *s != '\n' && *s != '\r') s++;
     *s = 0;
@@ -76,10 +75,6 @@ char* file always starts with '/' character.
 OUTPUT: char* get_filename returns the name of file without '/' character. 
 */
 char* get_filename(char* file){
-	// char* new_file = (char*)malloc(strlen(file)-1);
-	// strncpy(new_file, file + 1, strlen(file) - 1);
-
-	// return new_file;
 	if(file[0] == '/'){
 		file++;
 	}
@@ -101,22 +96,10 @@ int send_get(int client_sock, char* file){
 			fflush(stdout);
 		}
 
-	// while(fgets(S, 1000, f) != NULL){
-	// 	fflush(stdout);
-	// }
-	// int code = send_status('r', succeed);
-	// char status_code_message[20];
-	// sprintf(status_code_message, "\nStatus Code: %d", code);
 	send_status(client_sock, status);
 	write_headers(client_sock, strlen(S));
 	write(client_sock, S, strlen(S));
 
-	// write(client_sock, status_code_message, strlen(status_code_message));
-	// write_headers(client_sock, strlen(S));
-	// write(client_sock, S, strlen(S));
-	
-	// fclose(f);
-	// free(temp_filename);
 	fclose(f);
 	return(0);
 	}
@@ -174,18 +157,13 @@ int send_post(int client_sock, char* file){
                 int contentLength=atoi(token2);
 
                 if(strcmp(secondLine,"Content-Length")==0){
-                    //printf("\n%s\n%s\n%d\n",200,file,contentLength);
-                    //fflush(stdout);
 					while((read_size = recv(client_sock, client_message3, sizeof(client_message3),0 ))>0){
                         
                             char toWrite[contentLength];
                             slice_str(client_message3,toWrite,0,contentLength);
                             
                             fwrite(toWrite,sizeof(char),sizeof(toWrite),fp);
-                            //printf("Wrote: %s\nLength: %ld\n",toWrite, sizeof(toWrite));
-                    		//fflush(stdout);
 							fclose(fp);
-                            // write200(client_sock,httpType);
 							send_status(client_sock, status);
                             write_headers(client_sock, contentLength);
 							return(0);
@@ -237,11 +215,6 @@ int process_request(int client_sock, char* type, char* file){
 	return(1);
 }
 
-void clear_buffer(){
-	int c;
-	while ((c = getchar()) != '\n' && c != EOF) { }
-}
-
 void send_status(int client_sock, int status){
 	char status_code_message[20];
 
@@ -262,12 +235,19 @@ void send_status(int client_sock, int status){
 			sprintf(status_code_message, "\nStatus Code: %d", NOT_FOUND);
 			write(client_sock, status_code_message, strlen(status_code_message));
 			break;
+		case 501:
+			sprintf(status_code_message, "\nStatus Code: %d", NOT_IMPLEMENTED);
+			write(client_sock, status_code_message, strlen(status_code_message));
+			break;
 		default:
 			write(client_sock, "\nStatus Code: 500", 19);
 			break;
 	}
 }
 
+/*
+Function that sends a default headers in response to unsuccessful requests
+*/
 void send_error(int client_sock, int status_code){
 	struct tm strtime;
 	time_t timeoftheday;

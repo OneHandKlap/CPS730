@@ -95,12 +95,9 @@ int main(int argc, char *argv[]){
 			
 			puts(token);
 			
-			if((strcmp(token, "GET") >0 && strcmp(token, "POST") >0  && strcmp(token, "HEAD") >0 && strcmp(token,"!Q")>0)&&(i==1)){
-				send_error(client_sock, BAD_REQUEST);
-				break;
-				
-				// printf("struct: %s %s %s \n",client_request.type, client_request.path, client_request.protocol);
-				
+			if((strcmp(token, "GET") != 0 && strcmp(token, "POST") != 0  && strcmp(token, "HEAD") != 0 && strcmp(token,"!Q")!=0)&&(i==1)){
+				send_error(client_sock, NOT_IMPLEMENTED);
+				break;				
 			}
 			else if(i==1){
 				chop_newLine(token);
@@ -124,10 +121,8 @@ int main(int argc, char *argv[]){
 				}
 				client_request.protocol = token;
 			}
-			
 			token = strtok(NULL, " ");
 			++i;	
-
 		}
 
 		if (client_request.protocol != NULL && client_request.type!=NULL && client_request.path!=NULL){
@@ -142,7 +137,6 @@ int main(int argc, char *argv[]){
 
 			if((check_config(client_request.protocol)==1)& (check_config(fileEnding)==1)){
 				if(process_request(client_sock, client_request.type, client_request.path)==1){
-					// printf("%d",process_request(client_sock, client_request.type, client_request.path));
 					break;
 				}
 			}
