@@ -165,29 +165,63 @@ int send_post(int client_sock, char* file){
 
 		status = NOT_FOUND;
 	}
+	int hasHitEnter=0;
 	char client_message2[1000];
 	char client_message3[1000];
 	int read_size;
 	if(fp != NULL){
 	while((read_size = recv(client_sock, client_message2, sizeof(client_message2),0 ))>0){
-                char *token2=strtok((client_message2),":");
+
+				char *token2=strtok((client_message2),":");
                 char* secondLine=token2;
                 
                 
-                token2=strtok(NULL,":");
-                int contentLength=atoi(token2);
+                
 
                 if(strcmp(secondLine,"Content-Length")==0){
+					
+					token2=strtok(NULL,":");
+					int contentLength=atoi(token2);
+					int chars_written=0;
+					char toWrite[contentLength];
 					while((read_size = recv(client_sock, client_message3, sizeof(client_message3),0 ))>0){
-                        
-                            char toWrite[contentLength];
-                            slice_str(client_message3,toWrite,0,contentLength);
+							chop_newLine(client_message3);
+							if(strcmp(client_message3,"\0")==0 || strcmp(client_message3,"\n")==0){
+								if (hasHitEnter==1){
+									//add last string then print
+									
+									
+									fwrite(toWrite,sizeof(char),sizeof(toWrite),fp);
+									fclose(fp);
+									send_status(client_sock, status);
+									write_headers(client_sock, contentLength);
+									return(0);
+								}
+								else{
+									
+									toWrite[chars_written++]='\0';
+									
+									hasHitEnter=1;
+								}
+								
+							}
+							else{
+
+								int i=0;
+								while(i<=strlen(client_message3)&&chars_written<=contentLength){
+									toWrite[chars_written]=client_message3[i];
+									chars_written++;
+									i++;
+								}
+							}
+                            // char toWrite[contentLength];
+                            // slice_str(client_message3,toWrite,0,contentLength);
                             
-                            fwrite(toWrite,sizeof(char),sizeof(toWrite),fp);
-							fclose(fp);
-							send_status(client_sock, status);
-                            write_headers(client_sock, contentLength);
-							return(0);
+                            // fwrite(toWrite,sizeof(char),sizeof(toWrite),fp);
+							// fclose(fp);
+							// send_status(client_sock, status);
+                            // write_headers(client_sock, contentLength);
+							// return(0);
                         }
 
                     }
