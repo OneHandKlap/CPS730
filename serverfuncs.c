@@ -176,8 +176,6 @@ int send_post(int client_sock, char* file){
                 char* secondLine=token2;
                 
                 
-                
-
                 if(strcmp(secondLine,"Content-Length")==0){
 					
 					token2=strtok(NULL,":");
